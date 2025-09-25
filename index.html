@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Alfa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0284c7, #0f172a);
+      min-height: 100vh;
+    }
+    .drop-zone {
+      border: 2px dashed #555;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .drop-zone.dragover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    /* Modal animação */
+    .modal {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .modal-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+    .modal-show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+  <div class="w-full max-w-5xl bg-black/30 rounded-xl shadow-2xl p-8 grid md:grid-cols-2 gap-8">
+    <!-- Upload Section -->
+    <div>
+      <h2 class="text-white text-lg font-semibold mb-2">Faça upload da sua foto.</h2>
+      <p class="text-gray-300 text-sm mb-4">Primeiro, vamos gerar uma imagem 2D</p>
+
+      <!-- Dropzone -->
+      <div id="drop-area" class="drop-zone flex flex-col items-center justify-center h-64 text-gray-400">
+        <input type="file" id="fileElem" accept="image/*" class="hidden">
+        <p class="text-center">Solte sua imagem aqui ou 
+          <label for="fileElem" class="text-cyan-400 cursor-pointer hover:underline">clique para fazer upload</label>
+        </p>
+        <p class="text-xs mt-2">Formatos suportados: PNG, JPG, WEBP<br>Tamanho máximo: 15MB</p>
+      </div>
+
+      <!-- Botão -->
+      <button class="mt-6 w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg shadow">
+        Gerar Modelo 2D (1 credit)
+      </button>
+
+      <!-- Dicas -->
+      <button id="openModal" class="mt-3 w-full bg-black/40 text-gray-200 text-sm py-2 rounded-lg border border-gray-600 hover:bg-black/60">
+        Dicas para gerar um bom resultado
+      </button>
+    </div>
+
+    <!-- Referencias -->
+    <div>
+      <h2 class="text-white text-lg font-semibold mb-4">Referências</h2>
+      <div class="relative w-full overflow-hidden rounded-lg shadow-lg bg-black/20">
+        <!-- Slides -->
+        <div id="carousel" class="flex transition-transform duration-700 ease-in-out">
+          <div class="w-full h-64 sm:h-72 md:h-80 lg:h-96 flex items-center justify-center flex-shrink-0">
+            <img src="https://i.postimg.cc/9fY3NPh0/alien1.png" class="max-h-full max-w-full object-contain" alt="ref1">
+          </div>
+          <div class="w-full h-64 sm:h-72 md:h-80 lg:h-96 flex items-center justify-center flex-shrink-0">
+            <img src="https://i.postimg.cc/5yYpKpLv/alien2.png" class="max-h-full max-w-full object-contain" alt="ref2">
+          </div>
+          <div class="w-full h-64 sm:h-72 md:h-80 lg:h-96 flex items-center justify-center flex-shrink-0">
+            <img src="https://i.imgur.com/fI3K5mM.png" class="max-h-full max-w-full object-contain" alt="ref3">
+          </div>
+        </div>
+
+        <!-- Dots -->
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <button class="dot w-3 h-3 rounded-full bg-gray-400"></button>
+          <button class="dot w-3 h-3 rounded-full bg-gray-400"></button>
+          <button class="dot w-3 h-3 rounded-full bg-gray-400"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="tipsModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 modal modal-hidden">
+    <div class="bg-gray-900 text-white rounded-xl shadow-xl p-6 max-w-md w-full relative">
+      <button id="closeModal" class="absolute top-3 right-3 text-gray-300 hover:text-white text-xl">&times;</button>
+      <h2 class="text-cyan-400 text-lg font-bold mb-4">Dicas para um Bom Resultado</h2>
+      
+      <ul class="space-y-4 text-sm">
+        <li>
+          <span class="text-cyan-400">◆ Iluminação é Chave</span><br>
+          Tire uma foto nítida e bem iluminada, com foco principal no seu rosto. Evite sombras fortes.
+        </li>
+        <li>
+          <span class="text-cyan-400">◆ Foco em Você</span><br>
+          Evite fotos com gestos exagerados, acessórios que cubram o rosto (como óculos de sol) ou com outras pessoas.
+        </li>
+        <li>
+          <span class="text-cyan-400">◆ Proporção Ideal</span><br>
+          Para melhores resultados, utilize fotos com proporção quadrada (1:1), mostrando do peito para cima.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Drag and Drop
+    const dropArea = document.getElementById("drop-area");
+    const fileInput = document.getElementById("fileElem");
+
+    dropArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropArea.classList.add("dragover");
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+      dropArea.classList.remove("dragover");
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropArea.classList.remove("dragover");
+      fileInput.files = e.dataTransfer.files;
+      alert("Imagem carregada: " + fileInput.files[0].name);
+    });
+
+    // Carousel
+    let currentSlide = 0;
+    const carousel = document.getElementById("carousel");
+    const dots = document.querySelectorAll(".dot");
+    const totalSlides = dots.length;
+
+    function goToSlide(index) {
+      carousel.style.transform = `translateX(-${index * 100}%)`;
+      dots.forEach((dot, i) => {
+        dot.classList.toggle("bg-cyan-500", i === index);
+        dot.classList.toggle("bg-gray-400", i !== index);
+      });
+      currentSlide = index;
+    }
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => {
+        goToSlide(i);
+      });
+    });
+
+    // Autoplay a cada 2s
+    setInterval(() => {
+      let nextIndex = (currentSlide + 1) % totalSlides;
+      goToSlide(nextIndex);
+    }, 2000);
+
+    goToSlide(0);
+
+    // Modal com animação
+    const modal = document.getElementById("tipsModal");
+    const openBtn = document.getElementById("openModal");
+    const closeBtn = document.getElementById("closeModal");
+
+    openBtn.addEventListener("click", () => {
+      modal.classList.remove("modal-hidden");
+      modal.classList.add("modal-show");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("modal-show");
+      modal.classList.add("modal-hidden");
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("modal-show");
+        modal.classList.add("modal-hidden");
+      }
+    });
+  </script>
+</body>
+</html>
