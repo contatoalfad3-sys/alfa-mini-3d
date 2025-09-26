@@ -68,7 +68,7 @@ generateBtn.addEventListener("click", async () => {
   formData.append("file", fileInput.files[0]);
   
   try {
-    const response = await fetch("https://SEU-N8N-URL.app.n8n.cloud/webhook/toyart-generator", {
+    const response = await fetch("https://alfa3d.app.n8n.cloud/webhook-test/toyart-generator", {
       method: "POST",
       body: formData,
     });
@@ -206,3 +206,4 @@ function showImagePreview(file) {
   };
   reader.readAsDataURL(file);
 }
+
